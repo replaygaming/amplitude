@@ -1,23 +1,3 @@
-// Package amplitude is a proof-of-concept integration with
-// [Amplitude](http://amplitude.com) HTTP API
-//
-// Usage example:
-//
-//		import (
-//			"fmt"
-//
-//			"github.com/replaygaming/amplitude"
-//		)
-//
-//		func main() {
-//			apiKey := "abcdef"
-//			s := amplitude.NewServer(apiKey)
-//			e := amplitude.Event{Type: "test", UserID: "1"}
-//			if err := s.SendEvent(e); err != nil {
-//				fmt.Println(err)
-//			}
-//		}
-//
 package amplitude
 
 import (
@@ -30,17 +10,6 @@ import (
 	"strings"
 	"time"
 )
-
-// Properties is a dictionary type for both user and event properties
-type Properties map[string]*json.RawMessage
-
-// Event is the payload sent to the server
-type Event struct {
-	Type       string  `json:"event_type"`
-	UserID     string  `json:"user_id"`
-	Revenue    float64 `json:"revenue,omitempty"`
-	Properties `json:"event_properties,omitempty"`
-}
 
 const (
 	// PkgVersion is the current version of this package. Follows SemVer
