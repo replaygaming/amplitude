@@ -13,8 +13,8 @@ import (
 func main() {
   apiKey := "abcdef"
   s := amplitude.NewServer(apiKey)
-  e := amplitude.Event{Type: "test", UserID: "1"}
-  if err := s.SendEvent(e); err != nil {
+  e := amplitude.Event{EventType: "test", UserID: "1"}
+  if _, err := s.SendEvent(e); err != nil {
     fmt.Println(err)
   }
 }
