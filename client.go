@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 const (
@@ -29,58 +28,36 @@ func (e ResponseError) Error() string {
 		e.StatusCode, e.Body)
 }
 
-// Server wraps the API endpoint and allows events to be sent.
-type Server struct {
+// Client wraps the API endpoint and allows events to be sent.
+type Client struct {
 	// APIKey provided by Amplitude for the account.
 	APIKey string
 
 	// URL endpoint for Amplitude HTTP-API.
 	URL string
-
-	// Timeout is the max duration before timing out sending the event. NewServer
-	// defaults to 10 seconds.
-	Timeout time.Duration
 }
 
-// NewServer returns a server with default values for the Amplitude HTTP-API
+// NewClient returns a client with default values for the Amplitude HTTP-API
 // implementation.
-func NewServer(apiKey string) *Server {
-	return &Server{
-		APIKey:  apiKey,
-		URL:     APIURL,
-		Timeout: 10 * time.Second,
+func NewClient(apiKey string) *Client {
+	return &Client{
+		APIKey: apiKey,
+		URL:    APIURL,
 	}
 }
 
-func (s Server) encodePayload(e []Event) (url.Values, error) {
-	var err error
-	var payload []byte
-
-	v := url.Values{}
-	v.Set("api_key", s.APIKey)
-
-	if len(e) == 1 {
-		payload, err = json.Marshal(e[0])
-		v.Set("event", string(payload))
-	} else {
-		payload, err = json.Marshal(e)
-		v.Set("events", string(payload))
-	}
-	return v, err
-}
-
-// SendEvent sends one or more events to Amplitude using the server config. If
+// SendEvent sends one or more events to Amplitude using the client config. If
 // more than one event is passed, the payload is sent as an array of events.
-func (s Server) SendEvent(e ...Event) ([]byte, error) {
-	endpoint := strings.Join([]string{s.URL, EventsPath}, "/")
+func (c Client) SendEvent(e ...Event) ([]byte, error) {
+	url := strings.Join([]string{c.URL, EventsPath}, "/")
 
-	client := &http.Client{Timeout: s.Timeout}
-	payload, err := s.encodePayload(e)
+	vals, err := encode(c.APIKey, e)
 	if err != nil {
 		return nil, fmt.Errorf("Encode payload failed (%v)", err)
 	}
 
-	res, err := client.PostForm(endpoint, payload)
+	client := &http.Client{}
+	res, err := client.PostForm(url, vals)
 	if err != nil {
 		return nil, fmt.Errorf("Server request failed (%v)", err)
 	}
@@ -94,4 +71,20 @@ func (s Server) SendEvent(e ...Event) ([]byte, error) {
 		return nil, ResponseError{StatusCode: res.StatusCode, Body: body}
 	}
 	return body, nil
+}
+
+func encode(key string, e []Event) (url.Values, error) {
+	var err error
+	var payload []byte
+	vals := url.Values{}
+	vals.Set("api_key", key)
+
+	if len(e) == 1 {
+		payload, err = json.Marshal(e[0])
+		vals.Set("event", string(payload))
+	} else {
+		payload, err = json.Marshal(e)
+		vals.Set("events", string(payload))
+	}
+	return vals, err
 }
