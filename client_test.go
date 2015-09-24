@@ -16,18 +16,18 @@ func TestResponseError_Error(t *testing.T) {
 	expected := "Expected status code 200, got 400. Body: Invalid key"
 	result := err.Error()
 	if expected != result {
-		t.Errorf("Expecting response error to be: %s\n got: %s", expected, result)
+		t.Errorf("Expected response error to be: %s\n got: %s", expected, result)
 	}
 }
 
-func TestClient_NewClient(t *testing.T) {
+func TestDefaultClient_NewClient(t *testing.T) {
 	s := NewClient(testKey)
 	if s.APIKey != testKey {
-		t.Errorf("Expecting APIKey to be: %s\n got: %s", testKey, s.APIKey)
+		t.Errorf("Expected APIKey to be: %s\n got: %s", testKey, s.APIKey)
 	}
 }
 
-func TestClient_SendEvent(t *testing.T) {
+func TestDefaultClient_SendEvent(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "OK")
 	}))
@@ -49,7 +49,7 @@ func TestClient_SendEvent(t *testing.T) {
 	}
 }
 
-func TestClient_SendEvent_UnavailableServer(t *testing.T) {
+func TestDefaultClient_SendEvent_UnavailableServer(t *testing.T) {
 	ts := httptest.NewUnstartedServer(nil)
 
 	s := NewClient(testKey)
@@ -59,11 +59,11 @@ func TestClient_SendEvent_UnavailableServer(t *testing.T) {
 	_, err := s.SendEvent(e)
 
 	if err == nil {
-		t.Error("Expecting request to fail")
+		t.Error("Expected request to fail")
 	}
 }
 
-func TestClient_SendEvent_ResponseError(t *testing.T) {
+func TestDefaultClient_SendEvent_ResponseError(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, "Invalid Key")
@@ -78,7 +78,19 @@ func TestClient_SendEvent_ResponseError(t *testing.T) {
 	_, err := s.SendEvent(e)
 
 	if err == nil || err.Error() != expected {
-		t.Errorf("Expecting error to be: %s\ngot: %s", expected, err)
+		t.Errorf("Expected error to be: %s\ngot: %s", expected, err)
+	}
+}
+
+func TestNoopClient_SendEvent(t *testing.T) {
+	c := &NoopClient{}
+	e := Event{EventType: "test", UserID: "1"}
+	res, err := c.SendEvent(e)
+	if err != nil {
+		t.Errorf("Expected send event to return no error\ngot: %s", err)
+	}
+	if !bytes.Equal(res, []byte("")) {
+		t.Errorf("Expected response to be: empty\ngot: %s", res)
 	}
 }
 
@@ -93,7 +105,7 @@ func TestEncode(t *testing.T) {
 	enc, _ := url.QueryUnescape(result.Encode())
 
 	if enc != single {
-		t.Errorf("Expecting encoding a single event to equal: %q\ngot:%q",
+		t.Errorf("Expected encoding a single event to equal: %q\ngot:%q",
 			single, enc)
 	}
 
@@ -101,7 +113,7 @@ func TestEncode(t *testing.T) {
 	enc, _ = url.QueryUnescape(result.Encode())
 
 	if enc != multi {
-		t.Errorf("Expecting encoding multiple events to equal: %q\ngot:%q",
+		t.Errorf("Expected encoding multiple events to equal: %q\ngot:%q",
 			multi, enc)
 	}
 }

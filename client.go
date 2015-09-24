@@ -17,6 +17,12 @@ const (
 	EventsPath = "httpapi"
 )
 
+// Client interface requires a SendEvent method to send one or more events to
+// Amplitude.
+type Client interface {
+	SendEvent(...Event) ([]byte, error)
+}
+
 // ResponseError is a description of the error returned from Amplitude API.
 type ResponseError struct {
 	StatusCode int
@@ -28,8 +34,9 @@ func (e ResponseError) Error() string {
 		e.StatusCode, e.Body)
 }
 
-// Client wraps the API endpoint and allows events to be sent.
-type Client struct {
+// DefaultClient implements the client interface and wraps the API endpoint and
+// allows events to be sent.
+type DefaultClient struct {
 	// APIKey provided by Amplitude for the account.
 	APIKey string
 
@@ -37,10 +44,10 @@ type Client struct {
 	URL string
 }
 
-// NewClient returns a client with default values for the Amplitude HTTP-API
+// NewClient returns a default client with values for the Amplitude HTTP-API
 // implementation.
-func NewClient(apiKey string) *Client {
-	return &Client{
+func NewClient(apiKey string) *DefaultClient {
+	return &DefaultClient{
 		APIKey: apiKey,
 		URL:    APIURL,
 	}
@@ -48,7 +55,7 @@ func NewClient(apiKey string) *Client {
 
 // SendEvent sends one or more events to Amplitude using the client config. If
 // more than one event is passed, the payload is sent as an array of events.
-func (c Client) SendEvent(e ...Event) ([]byte, error) {
+func (c *DefaultClient) SendEvent(e ...Event) ([]byte, error) {
 	url := strings.Join([]string{c.URL, EventsPath}, "/")
 
 	vals, err := encode(c.APIKey, e)
@@ -71,6 +78,15 @@ func (c Client) SendEvent(e ...Event) ([]byte, error) {
 		return nil, ResponseError{StatusCode: res.StatusCode, Body: body}
 	}
 	return body, nil
+}
+
+// NoopClient implements the client interface, but doesn't do anything.
+type NoopClient struct {
+}
+
+// SendEvent return a blank body and no error.
+func (c NoopClient) SendEvent(...Event) ([]byte, error) {
+	return []byte(""), nil
 }
 
 func encode(key string, e []Event) (url.Values, error) {
