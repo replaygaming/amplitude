@@ -5,7 +5,7 @@
   - [x] Events API (httpapi)
   - [ ] Identify API
 
-## Usage example:
+## Basic usage example:
 
 ```go
 
@@ -17,9 +17,9 @@ import (
 
 func main() {
   apiKey := "abcdef"
-  s := amplitude.NewClient(apiKey)
+  c := amplitude.NewClient(apiKey)
   e := amplitude.Event{EventType: "test", UserID: "1"}
-  if _, err := s.SendEvent(e); err != nil {
+  if _, err := c.SendEvent(e); err != nil {
     fmt.Println(err)
   }
 }

@@ -1,7 +1,7 @@
-// Package amplitude is a proof-of-concept integration with
-// [Amplitude](http://amplitude.com) HTTP API
+// Package amplitude is a simple client implementation of the Amplitude HTTP
+// API.
 //
-// Usage example:
+// Basic usage example:
 //
 //		import (
 //			"fmt"
@@ -11,9 +11,9 @@
 //
 //		func main() {
 //			apiKey := "abcdef"
-//			s := amplitude.NewClient(apiKey)
+//			c := amplitude.NewClient(apiKey)
 //			e := amplitude.Event{EventType: "test", UserID: "1"}
-//			if _, err := s.SendEvent(e); err != nil {
+//			if _, err := c.SendEvent(e); err != nil {
 //				fmt.Println(err)
 //			}
 //		}
