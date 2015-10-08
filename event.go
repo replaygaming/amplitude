@@ -2,10 +2,16 @@ package amplitude
 
 import "encoding/json"
 
+// Payload is the event data sent to the server.
+type Payload interface {
+	Key() string
+	Value() ([]byte, error)
+}
+
 // Properties is a dictionary type for both user and event properties.
 type Properties map[string]*json.RawMessage
 
-// Event is the payload sent to the server.
+// Event implements the Payload interface.
 type Event struct {
 	UserID          string     `json:"user_id,omitempty"`
 	DeviceID        string     `json:"device_id,omitempty"`
@@ -25,6 +31,29 @@ type Event struct {
 	Device
 	Location
 	EventAugment
+}
+
+// Key returns the payload key for a single event.
+func (e Event) Key() string {
+	return "event"
+}
+
+// Value returns the event serialized into JSON.
+func (e Event) Value() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// Events represents a list of events. Implements the Payload interface.
+type Events []Event
+
+// Key returns the payload key for multiple events.
+func (e Events) Key() string {
+	return "events"
+}
+
+// Value returns all events serialized into JSON.
+func (e Events) Value() ([]byte, error) {
+	return json.Marshal(e)
 }
 
 // Device fields must all be updated together. Setting any of these fields

@@ -1,7 +1,6 @@
 package amplitude
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,10 +16,9 @@ const (
 	EventsPath = "httpapi"
 )
 
-// Client interface requires a SendEvent method to send one or more events to
-// Amplitude.
+// Client interface requires a Send method to post a payload to Amplitude.
 type Client interface {
-	SendEvent(...Event) ([]byte, error)
+	Send(Payload) ([]byte, error)
 }
 
 // ResponseError is a description of the error returned from Amplitude API.
@@ -53,28 +51,29 @@ func NewClient(apiKey string) *DefaultClient {
 	}
 }
 
-// SendEvent sends one or more events to Amplitude using the client config. If
-// more than one event is passed, the payload is sent as an array of events.
-func (c *DefaultClient) SendEvent(e ...Event) ([]byte, error) {
-	url := strings.Join([]string{c.URL, EventsPath}, "/")
+// Send sends a payload (an event or a list of events) to Amplitude using the
+// client config.
+func (c *DefaultClient) Send(p Payload) ([]byte, error) {
+	path := strings.Join([]string{c.URL, EventsPath}, "/")
 
-	vals, err := encode(c.APIKey, e)
+	data, err := p.Value()
 	if err != nil {
-		return nil, fmt.Errorf("Encode payload failed (%v)", err)
+		return nil, fmt.Errorf("Payload encoding failed (%v)", err)
 	}
 
+	vals := url.Values{}
+	vals.Set("api_key", c.APIKey)
+	vals.Set(p.Key(), string(data))
+
 	client := &http.Client{}
-	res, err := client.PostForm(url, vals)
+	res, err := client.PostForm(path, vals)
 	if err != nil {
 		return nil, fmt.Errorf("Server request failed (%v)", err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	if res.StatusCode != 200 {
+	if err != nil || res.StatusCode != 200 {
 		return nil, ResponseError{StatusCode: res.StatusCode, Body: body}
 	}
 	return body, nil
@@ -84,23 +83,7 @@ func (c *DefaultClient) SendEvent(e ...Event) ([]byte, error) {
 type NoopClient struct {
 }
 
-// SendEvent return a blank body and no error.
-func (c NoopClient) SendEvent(...Event) ([]byte, error) {
+// Send return a blank body and no error.
+func (c NoopClient) Send(Payload) ([]byte, error) {
 	return []byte(""), nil
-}
-
-func encode(key string, e []Event) (url.Values, error) {
-	var err error
-	var payload []byte
-	vals := url.Values{}
-	vals.Set("api_key", key)
-
-	if len(e) == 1 {
-		payload, err = json.Marshal(e[0])
-		vals.Set("event", string(payload))
-	} else {
-		payload, err = json.Marshal(e)
-		vals.Set("events", string(payload))
-	}
-	return vals, err
 }

@@ -20,7 +20,7 @@ func main() {
   apiKey := "abcdef"
   c := amplitude.NewClient(apiKey)
   e := amplitude.Event{EventType: "test", UserID: "1"}
-  if _, err := c.SendEvent(e); err != nil {
+  if _, err := c.Send(e); err != nil {
     fmt.Println(err)
   }
 }
