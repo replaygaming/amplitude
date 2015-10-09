@@ -56,14 +56,14 @@ func NewClient(apiKey string) *DefaultClient {
 func (c *DefaultClient) Send(p Payload) ([]byte, error) {
 	path := strings.Join([]string{c.URL, EventsPath}, "/")
 
-	data, err := p.Value()
+	data, err := p.Encode()
 	if err != nil {
 		return nil, fmt.Errorf("Payload encoding failed (%v)", err)
 	}
 
 	vals := url.Values{}
 	vals.Set("api_key", c.APIKey)
-	vals.Set(p.Key(), string(data))
+	vals.Set("event", string(data))
 
 	client := &http.Client{}
 	res, err := client.PostForm(path, vals)

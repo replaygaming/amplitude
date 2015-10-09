@@ -17,7 +17,7 @@ func (e EventFailed) Key() string {
 	return "failed"
 }
 
-func (e EventFailed) Value() ([]byte, error) {
+func (e EventFailed) Encode() ([]byte, error) {
 	return nil, errors.New("Marshal failed")
 }
 

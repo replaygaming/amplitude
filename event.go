@@ -4,8 +4,7 @@ import "encoding/json"
 
 // Payload is the event data sent to the server.
 type Payload interface {
-	Key() string
-	Value() ([]byte, error)
+	Encode() ([]byte, error)
 }
 
 // Properties is a dictionary type for both user and event properties.
@@ -33,26 +32,16 @@ type Event struct {
 	EventAugment
 }
 
-// Key returns the payload key for a single event.
-func (e Event) Key() string {
-	return "event"
-}
-
-// Value returns the event serialized into JSON.
-func (e Event) Value() ([]byte, error) {
+// Encode returns the event serialized into JSON.
+func (e Event) Encode() ([]byte, error) {
 	return json.Marshal(e)
 }
 
 // Events represents a list of events. Implements the Payload interface.
 type Events []Event
 
-// Key returns the payload key for multiple events.
-func (e Events) Key() string {
-	return "events"
-}
-
-// Value returns all events serialized into JSON.
-func (e Events) Value() ([]byte, error) {
+// Encode returns all events serialized into JSON.
+func (e Events) Encode() ([]byte, error) {
 	return json.Marshal(e)
 }
 
