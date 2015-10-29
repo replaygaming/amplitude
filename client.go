@@ -10,7 +10,7 @@ import (
 
 const (
 	// APIURL is the url for the HTTP-API endpoint.
-	APIURL = "https://api.amplitude.com/"
+	APIURL = "https://api.amplitude.com"
 
 	// EventsPath is the url part to post/get requests for events.
 	EventsPath = "httpapi"
