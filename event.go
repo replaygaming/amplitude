@@ -2,14 +2,6 @@ package amplitude
 
 import "encoding/json"
 
-// Payload is the event data sent to the server.
-type Payload interface {
-	Encode() ([]byte, error)
-}
-
-// Properties is a dictionary type for both user and event properties.
-type Properties map[string]*json.RawMessage
-
 // Event implements the Payload interface.
 type Event struct {
 	UserID          string     `json:"user_id,omitempty"`
@@ -32,9 +24,24 @@ type Event struct {
 	EventAugment
 }
 
+const (
+	// IdentifyPath is the path for the Identify endpoint.
+	EventsPath = "httpapi"
+)
+
 // Encode returns the event serialized into JSON.
 func (e Event) Encode() ([]byte, error) {
 	return json.Marshal(e)
+}
+
+// Path returns the url for the client to call
+func (e Event) Path() string {
+	return EventsPath
+}
+
+// Type sets the type of event key for the api
+func (e Event) Type() string {
+	return "event"
 }
 
 // Events represents a list of events. Implements the Payload interface.
@@ -45,27 +52,14 @@ func (e Events) Encode() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-// Device fields must all be updated together. Setting any of these fields
-// will automatically reset all of the others if they are not also set on the
-// same event.
-type Device struct {
-	OSName             string `json:"os_name,omitempty"`
-	OSVersion          string `json:"os_version,omitempty"`
-	DeviceBrand        string `json:"device_brand,omitempty"`
-	DeviceManufacturer string `json:"device_manufacturer,omitempty"`
-	DeviceModel        string `json:"device_model,omitempty"`
-	DeviceType         string `json:"device_type,omitempty"`
-	Carrier            string `json:"carrier,omitempty"`
+// Path returns the url for the client to call
+func (e Events) Path() string {
+	return EventsPath
 }
 
-// Location fields must all be updated together. Setting any of these
-// fields will automatically reset all of the others if they are not also set
-// on the same event.
-type Location struct {
-	Country string `json:"country,omitempty"`
-	Region  string `json:"region,omitempty"`
-	City    string `json:"city,omitempty"`
-	DMA     string `json:"dma,omitempty"`
+// Type sets the type of event key for the api
+func (e Events) Type() string {
+	return "event"
 }
 
 // EventAugment are optional keys interpreted in a special way by Amplitude.

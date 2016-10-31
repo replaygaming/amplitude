@@ -4,9 +4,9 @@
 ## APIs supported:
 
   - [x] Events API (httpapi)
-  - [ ] Identify API
+  - [x] Identify API
 
-## Basic usage example:
+## Basic Event Example:
 
 ```go
 
@@ -21,6 +21,26 @@ func main() {
   c := amplitude.NewClient(apiKey)
   e := amplitude.Event{EventType: "test", UserID: "1"}
   if _, err := c.Send(e); err != nil {
+    fmt.Println(err)
+  }
+}
+```
+
+## Basic Identify Example:
+
+```go
+
+import (
+  "fmt"
+
+  "github.com/replaygaming/amplitude"
+)
+
+func main() {
+  apiKey := "abcdef"
+  c := amplitude.NewClient(apiKey)
+  i := amplitude.Identification{UserID: "1", Platform: "Browser"}
+  if _, err := c.Send(i); err != nil {
     fmt.Println(err)
   }
 }
