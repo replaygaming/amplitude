@@ -21,6 +21,14 @@ func (e EventFailed) Encode() ([]byte, error) {
 	return nil, errors.New("Marshal failed")
 }
 
+func (e EventFailed) Path() string {
+	return "httpapi"
+}
+
+func (e EventFailed) Type() string {
+	return "event"
+}
+
 func TestResponseError_Error(t *testing.T) {
 	err := ResponseError{StatusCode: 400, Body: []byte("Invalid key")}
 	expected := "Expected status code 200, got 400. Body: Invalid key"

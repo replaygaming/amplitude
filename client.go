@@ -11,9 +11,6 @@ import (
 const (
 	// APIURL is the url for the HTTP-API endpoint.
 	APIURL = "https://api.amplitude.com"
-
-	// EventsPath is the url part to post/get requests for events.
-	EventsPath = "httpapi"
 )
 
 // Client interface requires a Send method to post a payload to Amplitude.
@@ -54,7 +51,7 @@ func NewClient(apiKey string) *DefaultClient {
 // Send sends a payload (an event or a list of events) to Amplitude using the
 // client config.
 func (c *DefaultClient) Send(p Payload) ([]byte, error) {
-	path := strings.Join([]string{c.URL, EventsPath}, "/")
+	path := strings.Join([]string{c.URL, p.Path()}, "/")
 
 	data, err := p.Encode()
 	if err != nil {
@@ -63,7 +60,7 @@ func (c *DefaultClient) Send(p Payload) ([]byte, error) {
 
 	vals := url.Values{}
 	vals.Set("api_key", c.APIKey)
-	vals.Set("event", string(data))
+	vals.Set(p.Type(), string(data))
 
 	client := &http.Client{}
 	res, err := client.PostForm(path, vals)
